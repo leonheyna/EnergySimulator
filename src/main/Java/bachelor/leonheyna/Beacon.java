@@ -35,11 +35,7 @@ public class Beacon extends SimulationComponent {
 
     private BalanceIndicator calculateBalanceIndicator() {
         int timestamp = time;
-        System.out.println("PRODUCED ENERGY "+producedEnergy());
-        System.out.println("CONSUMED ENERGY "+consumptionBean.getConsumesInterval());
-        System.out.println("INDICATOR "+ consumptionBean.getConsumesInterval()/producedEnergy());
-
-        double indicator = consumptionBean.getConsumesInterval() / producedEnergy();
+        double indicator = (0.5 * (consumptionBean.getConsumesInterval() / producedEnergy()));
         return new BalanceIndicator(timestamp, indicator);
     }
 
@@ -88,6 +84,8 @@ public class Beacon extends SimulationComponent {
         logger.info("######################");
         logger.info("simulation ran for "+simulationRuntime+" seconds");
         logger.info("consumed total "+consumptionBean.getConsumesTotal());
+        logger.info("");
+        logger.info("");
     }
 
     private void initiateSimulation() {

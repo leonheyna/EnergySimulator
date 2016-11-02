@@ -8,8 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Main {
-    private static int BALANCEINDICATORINTERVAL = 5;
+    private static int BALANCEINDICATORINTERVAL = 1;
     private static int SIMULTATIONRUNTIME = 60*60*1;
+
     private static int AMOUNT_SMARTCONTROLLER = 5;
     private static double TEST_LATENCY_0 = 0;
     private static double TEST_LATENCY_1 = 0.01;
@@ -17,6 +18,7 @@ public class Main {
     private static double TEST_LATENCY_3 = 0.25;
     private static double TEST_LATENCY_4 = 1.25;
     private static double TEST_LATENCY_5 = 6.25;
+
     private static int AMOUNT_LOW = 5;
     private static int CONSUMPTION_LOW = 50;
     private static double ACTIVATE_LOW = 0.2;
