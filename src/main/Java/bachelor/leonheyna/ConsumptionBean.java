@@ -12,6 +12,10 @@ public class ConsumptionBean {
         return consumes;
     }
 
+    public void addConsumes(int value){
+        consumes += value;
+    }
+
     public void setConsumes(int consumes) {
         this.consumes = consumes;
     }
@@ -31,4 +35,6 @@ public class ConsumptionBean {
     public void setConsumesTotal(double consumesTotal) {
         this.consumesTotal = consumesTotal;
     }
+
+    public void addIntervallToTotal(){consumesTotal += consumesInterval;}
 }
