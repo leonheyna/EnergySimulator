@@ -65,7 +65,7 @@ public class SmartController extends SimulationComponent {
 
     void refreshConsumers() {
         consumptionBean.setConsumesInterval(0);
-        String loggerString = time + ";" + latency + ";" + activeBalanceIndicator.indicator;
+        String loggerString = ""+activeBalanceIndicator.indicator;
         for (Consumer consumer : consumerList) {
             consumer.refreshConsumer();
             double consuming = consumer.getConsumesInterval();
@@ -81,7 +81,7 @@ public class SmartController extends SimulationComponent {
     }
 
     void initiateSimulation() {
-        String loggerHeader= "time;latency;BalanceIndicator";
+        String loggerHeader= "BalanceIndicator";
         for (int i = 0; i < consumerList.size(); i++) {
             loggerHeader = loggerHeader + ";consumedInterval;Fillstand";
         }
