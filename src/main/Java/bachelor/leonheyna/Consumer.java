@@ -10,10 +10,11 @@ public class Consumer extends SimulationComponent {
         return fillStand;
     }
 
-    public Consumer(String name, int minRuntime, int consumes, double fillRate, double emptyRate) {
+    public Consumer(String name, int minRuntime, int consumes, double fillStand, double fillRate, double emptyRate) {
         this.componentName = name;
         this.minRuntime = minRuntime;
         this.consumptionBean.setConsumes(consumes);
+        this.fillStand = fillStand;
         this.fillRate = fillRate;
         this.emptyRate = emptyRate;
     }
@@ -22,13 +23,9 @@ public class Consumer extends SimulationComponent {
 
     private double currentIndicator = 0;
     private double changeTime = 0;
-//    private boolean newBalanceIndicator = false;
-
     private int minRuntime = 0;
     private double runTime = 0;
     private boolean isActive = false;
-    private boolean stateChanged = false;
-
     private double fillStand = 0;
     private double changeInterval;
     private double fillInterval;
@@ -40,16 +37,24 @@ public class Consumer extends SimulationComponent {
         return consumptionBean.getConsumes();
     }
 
+    int getConsumesForIntervall() {
+        if (isActive) {
+            return consumptionBean.getConsumes();
+        } else {
+            return 0;
+        }
+    }
+
     double getConsumesInterval() {
         return consumptionBean.getConsumesInterval();
     }
 
     private boolean overflows(int timespan) {
-        return 1 < fillStand + (fillRate / 3600) * timespan || 1<fillStand;
+        return 1 < fillStand + (fillRate / 3600) * timespan || 1 < fillStand;
     }
 
     private boolean empties() {
-        return 0 > fillStand - (emptyRate / 3600) || 0 >fillStand;
+        return 0 > fillStand - (emptyRate / 3600) || 0 > fillStand;
     }
 
     void testNames() {
@@ -59,7 +64,6 @@ public class Consumer extends SimulationComponent {
     void receiveIndicator(BalanceIndicator balanceIndicator, double effectTime) {
         currentIndicator = balanceIndicator.indicator;
         changeTime = effectTime;
-//        newBalanceIndicator = true;
     }
 
     void stayActivated() {
@@ -80,7 +84,8 @@ public class Consumer extends SimulationComponent {
             emptyInterval = 0;
         }
     }
-    void stayDeactivated(){
+
+    void stayDeactivated() {
         if (empties()) {
             consumptionBean.setConsumesInterval(consumptionBean.getConsumes() / 3600);
             fillInterval = fillRate / 3600;
@@ -104,18 +109,18 @@ public class Consumer extends SimulationComponent {
                 if (currentIndicator <= 1 - fillStand) {
                     if (isActive) {
                         stayActivated();
-                    }else{
-                        if(overflows(minRuntime)){
+                    } else {
+                        if (overflows(minRuntime)) {
                             stayDeactivated();
-                        }else{
+                        } else {
                             isActive = true;
-                            if(changeTime > time){
-                                consumptionBean.setConsumesInterval((double)consumptionBean.getConsumes()/3600 * (1-(changeTime-time)));
-                                fillInterval = (fillRate / 3600) * (1-(changeTime-time));
-                                emptyInterval = (emptyRate / 3600) * (changeTime-time);
+                            if (changeTime > time) {
+                                consumptionBean.setConsumesInterval((double) consumptionBean.getConsumes() / 3600 * (1 - (changeTime - time)));
+                                fillInterval = (fillRate / 3600) * (1 - (changeTime - time));
+                                emptyInterval = (emptyRate / 3600) * (changeTime - time);
                                 runTime = changeTime + minRuntime;
-                            }else{
-                                consumptionBean.setConsumesInterval((double) consumptionBean.getConsumes()/3600);
+                            } else {
+                                consumptionBean.setConsumesInterval((double) consumptionBean.getConsumes() / 3600);
                                 fillInterval = fillRate / 3600;
                                 emptyInterval = 0;
                                 runTime = time + minRuntime;
@@ -123,18 +128,18 @@ public class Consumer extends SimulationComponent {
                         }
                     }
                 } else {
-                    if(isActive){
-                        if(empties()){
+                    if (isActive) {
+                        if (empties()) {
                             stayActivated();
-                        }else{
+                        } else {
                             isActive = false;
-                            if(changeTime > time){
-                                consumptionBean.setConsumesInterval((double)consumptionBean.getConsumes()/3600 * (changeTime-time));
-                                fillInterval = fillRate / 3600 * (changeTime-time);
-                                emptyInterval = emptyRate / 3600 * (1-(changeTime-time));
+                            if (changeTime > time) {
+                                consumptionBean.setConsumesInterval((double) consumptionBean.getConsumes() / 3600 * (changeTime - time));
+                                fillInterval = fillRate / 3600 * (changeTime - time);
+                                emptyInterval = emptyRate / 3600 * (1 - (changeTime - time));
                             }
                         }
-                    }else{
+                    } else {
                         stayDeactivated();
                     }
                 }

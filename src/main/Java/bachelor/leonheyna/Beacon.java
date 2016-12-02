@@ -9,10 +9,11 @@ public class Beacon extends SimulationComponent {
     public Beacon() {
     }
 
-    public Beacon(String name, int simulationRuntime, int balanceIndicatorIntervalTime, List<SmartController> smartControllerList, List<Double> producedEnergyList, Logger logger) {
+    public Beacon(String name, int simulationRuntime, int balanceIndicatorIntervalTime, double tolerance, List<SmartController> smartControllerList, List<Double> producedEnergyList, Logger logger) {
         this.componentName = name;
         this.simulationRuntime = simulationRuntime;
         this.balanceIndicatorIntervalTime = balanceIndicatorIntervalTime;
+        this.tolerance = tolerance;
         this.smartControllerList = smartControllerList;
         this.producedEnergyList = producedEnergyList;
         this.logger = logger;
@@ -28,28 +29,26 @@ public class Beacon extends SimulationComponent {
 
     private List<Double> producedEnergyList;
 
-    private double producesIntervall() {
-        return (maxConsumption / 3600) * producedEnergyList.get(time / timescale);
+    private double produces() {
+        return 0.5687 * maxConsumption * producedEnergyList.get((time % 86400) / timescale);
     }
 
     private ConsumptionBean consumptionBean = new ConsumptionBean();
     private List<SmartController> smartControllerList;
-    private List<BalanceIndicator> balanceIndicatorList = new ArrayList<>();
     private BalanceIndicator activeBalanceIndicator;
 
 
     private BalanceIndicator calculateBalanceIndicator() {
         int timestamp = time;
-        double consumes = consumptionBean.getConsumesInterval();
-        double produces = producesIntervall();
-        double indicator = (consumes - produces * ((double) 1 - tolerance)) / (produces * ((double) 1 + tolerance) - produces * ((double) 1 - tolerance));
+        double consumes = (double) consumptionBean.getConsumes();
+        double produces = produces();
+        double indicator = ((consumes - produces * ((double) 1 - tolerance)) / (produces * ((double) 1 + tolerance) - produces * ((double) 1 - tolerance)));
         if (indicator > 1) indicator = 1;
         if (indicator < 0) indicator = 0;
         return new BalanceIndicator(timestamp, indicator);
     }
 
     private void sendBalanceIndicator(BalanceIndicator balanceIndicator) {
-        balanceIndicatorList.add(balanceIndicator);
         for (SmartController smartController : smartControllerList) {
             smartController.receiveIndicator(balanceIndicator);
         }
@@ -66,7 +65,7 @@ public class Beacon extends SimulationComponent {
 
     void simulateGrid() {
         initiateSimulation();
-        logger.info("time;consumesIntervall;producesInterval;balanceIndicator");
+        logger.info("ConsumesIntervall;ProducesInterval;BalanceIndicator");
         for (time = 0; time < simulationRuntime; time++) {
             if (time % balanceIndicatorIntervalTime == 0) {
                 activeBalanceIndicator = calculateBalanceIndicator();
@@ -75,13 +74,20 @@ public class Beacon extends SimulationComponent {
                 refreshSmartControllers();
             }
             consumptionBean.setConsumesInterval(0);
+            consumptionBean.setConsumes(0);
             for (SmartController smartController : smartControllerList) {
                 consumptionBean.setConsumesInterval(consumptionBean.getConsumesInterval() + smartController.getConsumesInterval());
+                consumptionBean.addConsumes(smartController.getConsumes());
             }
             consumptionBean.setConsumesTotal(consumptionBean.getConsumesTotal() + consumptionBean.getConsumesInterval());
-            String loggerString = time + ";" + consumptionBean.getConsumesInterval() + ";" + producesIntervall() + ";" + activeBalanceIndicator.indicator;
+            String loggerString = (double) consumptionBean.getConsumes() / timescale + ";" + produces() / timescale + ";" + calculateBalanceIndicator().indicator;
             loggerString = loggerString.replaceAll("\\.", ",");
-            logger.info(loggerString);
+            if (time % 600 == 0) {
+                logger.info(loggerString);
+            }
+            if (time % 3600 == 0) {
+                System.out.println(time);
+            }
         }
     }
 

@@ -19,9 +19,6 @@ public class SmartController extends SimulationComponent {
 
     Logger logger;
 
-    /**
-     * latency in s
-     */
     private double latency;
 
     private ConsumptionBean consumptionBean = new ConsumptionBean();
@@ -43,16 +40,23 @@ public class SmartController extends SimulationComponent {
     }
 
     void receiveIndicator(BalanceIndicator newBalanceIndicator) {
-        double effectTime = newBalanceIndicator.timestamp + latency;
+        double effectTime = (double) newBalanceIndicator.timestamp + latency;
         balanceIndicatorMap.put(effectTime, newBalanceIndicator);
+        Map<Double, BalanceIndicator> toBeRemoved = new HashMap<>();
         for (Map.Entry<Double, BalanceIndicator> bI : balanceIndicatorMap.entrySet()) {
             effectTime = bI.getKey();
             BalanceIndicator balanceIndicator = bI.getValue();
             if (activeBalanceIndicator.timestamp < balanceIndicator.timestamp && effectTime < (double) time + 1) {
                 activeBalanceIndicator = balanceIndicator;
                 handleIndicator(balanceIndicator, effectTime);
-                balanceIndicatorMap.remove(effectTime, activeBalanceIndicator);
+//                balanceIndicatorMap.remove(effectTime, activeBalanceIndicator);
             }
+            if (effectTime < time) {
+                toBeRemoved.put(effectTime, balanceIndicator);
+            }
+        }
+        for (Map.Entry<Double, BalanceIndicator> bI : toBeRemoved.entrySet()) {
+            balanceIndicatorMap.remove(bI.getKey(), bI.getValue());
         }
         refreshConsumers();
     }
@@ -65,25 +69,29 @@ public class SmartController extends SimulationComponent {
 
     void refreshConsumers() {
         consumptionBean.setConsumesInterval(0);
-        String loggerString = ""+activeBalanceIndicator.indicator;
+        consumptionBean.setConsumes(0);
+        String loggerString = "" + activeBalanceIndicator.indicator;
         for (Consumer consumer : consumerList) {
             consumer.refreshConsumer();
             double consuming = consumer.getConsumesInterval();
             double fillstand = consumer.getFillStand();
             consumptionBean.setConsumesInterval(consumptionBean.getConsumesInterval() + consuming);
+            consumptionBean.addConsumes(consumer.getConsumesForIntervall());
             loggerString = loggerString + ";" + consuming + ";" + fillstand;
         }
         consumptionBean.setConsumesTotal(consumptionBean.getConsumesTotal() + consumptionBean.getConsumesInterval());
         loggerString = loggerString + ";" + consumptionBean.getConsumesInterval();
         loggerString = loggerString.replaceAll("\\.", ",");
-        logger.info(loggerString);
+        if (time % 600 == 0) {
+            logger.info(loggerString);
+        }
         time++;
     }
 
     void initiateSimulation() {
-        String loggerHeader= "BalanceIndicator";
+        String loggerHeader = "BalanceIndicator";
         for (int i = 0; i < consumerList.size(); i++) {
-            loggerHeader = loggerHeader + ";consumedInterval;Fillstand";
+            loggerHeader = loggerHeader + ";ConsumedInterval - Consumer " + i + ";Fillstand - Consumer " + i;
         }
         loggerHeader = loggerHeader + ";SmaCoConsumedInterval";
         logger.info(loggerHeader);

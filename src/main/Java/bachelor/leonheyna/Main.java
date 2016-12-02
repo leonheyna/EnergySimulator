@@ -2,140 +2,79 @@ package bachelor.leonheyna;
 
 import ch.qos.logback.classic.Logger;
 
-import java.lang.reflect.Array;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 public class Main {
-    private static int BALANCEINDICATORINTERVAL = 5;
-    private static int SIMULTATIONRUNTIME = 60 * 60 * 24;
+    private static int SIMULTATIONRUNTIME = 60 * 60 * 24 * 7;
 
-    private static int AMOUNT_SMARTCONTROLLER = 5;
     private static double TEST_LATENCY_0 = 0;
-    private static double TEST_LATENCY_1 = 0.01;
-    private static double TEST_LATENCY_2 = 0.05;
-    private static double TEST_LATENCY_3 = 0.25;
-    private static double TEST_LATENCY_4 = 1.25;
-    private static double TEST_LATENCY_5 = 6.25;
-
-    private static int highConsumption = 750;
-    private static int lowConsumption = 250;
+    private static double TEST_LATENCY_1 = 0.05;
+    private static double TEST_LATENCY_2 = 0.1;
+    private static double TEST_LATENCY_3 = 0.2;
+    private static double TEST_LATENCY_4 = 1.5;
+    private static double TEST_LATENCY_5 = 300;
+    private static double TEST_LATENCY_6 = 600;
 
 
     public static void main(String[] args) {
-//        System.out.println((6 - 4%5) * 10);
         runGeneratedSimulationEnviroment();
     }
 
 
     private static void runGeneratedSimulationEnviroment() {
-        String beaconName = "" + 0;
+        String beaconName = "" + 1;
         Logger logger = LoggerCreator.defaultLogger(beaconName);
-        Beacon beacon = new Beacon(beaconName, SIMULTATIONRUNTIME, BALANCEINDICATORINTERVAL, generateSmartControllerList(beaconName, TEST_LATENCY_0), dayEnergyList, logger);
+        Beacon beacon = new Beacon(beaconName, SIMULTATIONRUNTIME, 1, 0.1, generateSmartControllerListTestFinal(beaconName), dayEnergyList, logger);
         beacon.simulateGrid();
-        System.out.println(0);
-       /* beaconName = "" + 1;
-        logger = LoggerCreator.defaultLogger(beaconName);
-        beacon = new Beacon(beaconName, SIMULTATIONRUNTIME, BALANCEINDICATORINTERVAL, generateSmartControllerList(beaconName, TEST_LATENCY_1), dayEnergyList, logger);
-        beacon.simulateGrid();
-        System.out.println(1);
-        beaconName = "" + 2;
-        logger = LoggerCreator.defaultLogger(beaconName);
-        beacon = new Beacon(beaconName, SIMULTATIONRUNTIME, BALANCEINDICATORINTERVAL, generateSmartControllerList(beaconName, TEST_LATENCY_2), dayEnergyList, logger);
-        beacon.simulateGrid();
-        System.out.println(2);
-        beaconName = "" + 3;
-        logger = LoggerCreator.defaultLogger(beaconName);
-        beacon = new Beacon(beaconName, SIMULTATIONRUNTIME, BALANCEINDICATORINTERVAL, generateSmartControllerList(beaconName, TEST_LATENCY_3), dayEnergyList, logger);
-        beacon.simulateGrid();
-        System.out.println(3);
-        beaconName = "" + 4;
-        logger = LoggerCreator.defaultLogger(beaconName);
-        beacon = new Beacon(beaconName, SIMULTATIONRUNTIME, BALANCEINDICATORINTERVAL, generateSmartControllerList(beaconName, TEST_LATENCY_4), dayEnergyList, logger);
-        beacon.simulateGrid();
-        System.out.println(4);
-        beaconName = "" + 5;
-        logger = LoggerCreator.defaultLogger(beaconName);
-        beacon = new Beacon(beaconName, SIMULTATIONRUNTIME, BALANCEINDICATORINTERVAL, generateSmartControllerList(beaconName, TEST_LATENCY_5), dayEnergyList, logger);
-        beacon.simulateGrid();
-        System.out.println(5);
-        */
-//        beacon.testNames();
-//        System.out.println(2 + 0.5);
-    }
-
-    private static List<SmartController> generateSmartControllerList(String beaconName, double latency) {
-        List<SmartController> smartControllerList = new ArrayList<SmartController>();
-        for (int i = 0; i < 1; i++) {
-            String smaCoName = beaconName + "-" + i;
-            Logger logger = LoggerCreator.defaultLogger(smaCoName);
-            smartControllerList.add(new SmartController(smaCoName, TEST_LATENCY_0, generateConsumerListTestready(smaCoName), logger));
-        }
-        return smartControllerList;
     }
 
     private static List<Consumer> generateConsumerList(String smaCoName) {
         List<Consumer> consumerList = new ArrayList<>();
-        for (int i = 0; i < 1; i++) {
-            String consumerName = smaCoName + "-" + i;
-            /*int minRuntime = (6 - i % 5) * 10;
-            int consumption;
-            double fillrate = (double) (i + 1) / 10;
-            double emptyrate = fillrate/2;
-            consumption = i < 5 ? highConsumption : lowConsumption;
-            */
-            int minRuntime = 1;
-            int consumption = 1000;
-            double fillrate = 0.1;
-            double emptyrate = 0.1;
-            consumerList.add(new Consumer(consumerName, minRuntime, consumption, fillrate, emptyrate));
+        String consumerName;
+        int minRuntime = 0;
+        int consumption = 100;
+        double fillstand = 0;
+        double fillrate = 0.1;
+        double emptyrate = 0.1;
+        for (int i = 0; i < 10; i++) {
+            consumerName = smaCoName + "-" + i;
+            minRuntime = 2 ^ i;
+            fillrate = (double) 1 - (0.8 / ((double) i + 1));
+            emptyrate = fillrate;
+            consumerList.add(new Consumer(consumerName, minRuntime, consumption, fillstand, fillrate, emptyrate));
         }
         return consumerList;
     }
-    private static  List<Consumer> generateConsumerListTestready(String smaCoName){
-        List<Consumer> consumerList = new ArrayList<>();
-        String consumerName = smaCoName + "-" + 0;
-        int minRuntime = 1;
-        int consumption = 510;
-        double fillrate = 0.51;
-        double emptyrate = 0.51;
-        consumerList.add(new Consumer(consumerName, minRuntime, consumption, fillrate, emptyrate));
-        consumerName = smaCoName + "-" + 1;
-        consumption = 250;
-        fillrate = 0.25;
-        emptyrate = 0.25;
-        consumerList.add(new Consumer(consumerName, minRuntime, consumption, fillrate, emptyrate));
-        consumerName = smaCoName + "-" + 2;
-        consumption = 120;
-        fillrate = 0.12;
-        emptyrate = 0.12;
-        consumerList.add(new Consumer(consumerName, minRuntime, consumption, fillrate, emptyrate));
-        consumerName = smaCoName + "-" + 3;
-        consumption = 60;
-        fillrate = 0.06;
-        emptyrate = 0.06;
-        consumerList.add(new Consumer(consumerName, minRuntime, consumption, fillrate, emptyrate));
-        consumerName = smaCoName + "-" + 4;
-        consumption = 30;
-        fillrate = 0.03;
-        emptyrate = 0.03;
-        consumerList.add(new Consumer(consumerName, minRuntime, consumption, fillrate, emptyrate));
-        consumerName = smaCoName + "-" + 5;
-        consumption = 20;
-        fillrate = 0.03;
-        emptyrate = 0.03;
-        consumerList.add(new Consumer(consumerName, minRuntime, consumption, fillrate, emptyrate));
-        consumerName = smaCoName + "-" + 6;
-        consumption = 10;
-        fillrate = 0.01;
-        emptyrate = 0.01;
-        consumerList.add(new Consumer(consumerName, minRuntime, consumption, fillrate, emptyrate));
 
-        return consumerList;
+
+    private static List<SmartController> generateSmartControllerListTestFinal(String beaconname) {
+        List<SmartController> smartControllerList = new ArrayList<SmartController>();
+
+        String smaCoName = beaconname + "-" + 0;
+        Logger logger = LoggerCreator.defaultLogger(smaCoName);
+        smartControllerList.add(new SmartController(smaCoName, TEST_LATENCY_0, generateConsumerList(smaCoName), logger));
+        smaCoName = beaconname + "-" + 1;
+        logger = LoggerCreator.defaultLogger(smaCoName);
+        smartControllerList.add(new SmartController(smaCoName, TEST_LATENCY_1, generateConsumerList(smaCoName), logger));
+        smaCoName = beaconname + "-" + 2;
+        logger = LoggerCreator.defaultLogger(smaCoName);
+        smartControllerList.add(new SmartController(smaCoName, TEST_LATENCY_2, generateConsumerList(smaCoName), logger));
+        smaCoName = beaconname + "-" + 3;
+        logger = LoggerCreator.defaultLogger(smaCoName);
+        smartControllerList.add(new SmartController(smaCoName, TEST_LATENCY_3, generateConsumerList(smaCoName), logger));
+        smaCoName = beaconname + "-" + 4;
+        logger = LoggerCreator.defaultLogger(smaCoName);
+        smartControllerList.add(new SmartController(smaCoName, TEST_LATENCY_4, generateConsumerList(smaCoName), logger));
+        smaCoName = beaconname + "-" + 5;
+        logger = LoggerCreator.defaultLogger(smaCoName);
+        smartControllerList.add(new SmartController(smaCoName, TEST_LATENCY_5, generateConsumerList(smaCoName), logger));
+        smaCoName = beaconname + "-" + 6;
+        logger = LoggerCreator.defaultLogger(smaCoName);
+        smartControllerList.add(new SmartController(smaCoName, TEST_LATENCY_6, generateConsumerList(smaCoName), logger));
+
+        return smartControllerList;
     }
 
     private static List<Double> dayEnergyList = Arrays.asList(
